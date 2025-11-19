@@ -65,9 +65,12 @@
     <h5 class="mt-4">Target Column (for Label Issues)</h5>
 
     {% if detected_target %}
+        {% set manual_target_key = 'manual_target_column_' ~ dataset.id %}
+        {% set has_manual_target = session.get(manual_target_key) %}
+
         <div class="info-box mb-3">
             <b>Using Target Column:</b> {{ detected_target }}
-            {% if session['manual_target_column_' ~ dataset.id] %}
+            {% if has_manual_target %}
                 <span class="text-success">(manual override)</span>
             {% else %}
                 <span class="text-muted">(auto-detected)</span>
@@ -120,7 +123,9 @@
 
     {% if outlier_total == 0 %}
         <div class="success-box mb-3">✓ No outliers detected.</div>
-    {% else %}
+    {% endif %}
+
+    {% if outlier_total > 0 %}
 
         <!-- FILTER BUTTONS -->
         <div class="outlier-filter-btns mb-3">
@@ -135,10 +140,9 @@
             {{ merged_table | safe }}
         </div>
 
-         <div id="no-outliers-message" class="note-box d-none mt-3">
+        <div id="no-outliers-message" class="note-box d-none mt-3">
             ⚠ No outliers for the selected type.
         </div>
-
 
         <!-- FILTER SCRIPT -->
         <script>
@@ -166,32 +170,31 @@
 
                 rows.forEach(row => {
                     const type = row.querySelector("td:last-child").textContent.trim();
-                    let show = (key === "all") ||
-                               (key === "statistical" && type === "Statistical") ||
-                               (key === "ai" && type === "AI-Based") ||
-                               (key === "structural" && type === "Structural");
+                    let show =
+                        key === "all" ||
+                        (key === "statistical" && type === "Statistical") ||
+                        (key === "ai" && type === "AI-Based") ||
+                        (key === "structural" && type === "Structural");
 
                     row.classList.toggle("hidden-row", !show);
                 });
 
                 setActiveButton(key);
-            
-            const visibleCount = Array.from(rows).filter(row => !row.classList.contains("hidden-row")).length;
+
+                const visibleCount = Array.from(rows).filter(r => !r.classList.contains("hidden-row")).length;
+
                 if (visibleCount === 0) {
                     message.classList.remove("d-none");
                 } else {
                     message.classList.add("d-none");
                 }
-                
             }
 
-
-             // Ensure the correct message state is shown on load
-            filterOutliers('all');
+            // Initialize on page load
+            filterOutliers("all");
         </script>
 
-  
-
+    {% endif %}
 
     <!-- LABEL ISSUES -->
     <h5 class="mt-5">Label Issues (Cleanlab)</h5>
