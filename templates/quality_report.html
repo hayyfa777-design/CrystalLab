@@ -132,11 +132,11 @@
                     </div>
                     <div>
                         <p class="text-muted mb-1 small">Step 2 · Quality Scan</p>
-                        <h4 class="mb-1">
+                        <h4 class="mb-0">
                             <i class="bi bi-exclamation-circle" style="color: #a8d0e6;"></i>
                             {{ dataset.original_filename }}
                         </h4>
-                        <small class="text-muted">Uploaded {{ dataset.uploaded_at.strftime('%b %d, %Y %I:%M %p') if dataset.uploaded_at else '—' }}</small>
+                        
                     </div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
@@ -288,15 +288,14 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                             <h5 class="section-title mb-0">Label issues</h5>
-                            <span class="stat-badge"><i class="bi bi-magic"></i> Cleanlab</span>
+                            
                         </div>
                         {% if not detected_target %}
                             <div class="note-box mb-0">⚠ Skipped — no target column detected.</div>
                         {% else %}
                             {% if label_issue_count > 0 %}
                                 <div class="info-box mb-3">
-                                    <b>Label issues detected: {{ label_issue_count }}</b><br>
-                                    <small>{{ label_note }}</small>
+                                     <b>Label issues detected: {{ label_issue_count }}</b>
                                 </div>
                                 <div class="scroll-container">
                                     {{ label_table | safe }}
