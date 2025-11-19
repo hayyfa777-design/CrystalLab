@@ -372,6 +372,7 @@ def quality_issues(dataset_id):
         <tbody>
             <tr><th>Duplicate Rows (Local)</th><td>{dup_tbl.get('duplicate_rows_count', 0)}</td></tr>
             <tr><th>Duplicate Rows (%)</th><td>{dup_tbl.get('duplicate_rows_percent', '0%')}</td></tr>
+
             <tr><th>Duplicate Rows (YData)</th><td>{y_dup_rows}</td></tr>
             <tr><th>Duplicate Rows (%) (YData)</th><td>{y_dup_percent}</td></tr>
         </tbody>
