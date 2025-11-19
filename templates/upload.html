@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset - Crystal LAB{% endblock %}
+
+{% block content %}
+<style>
+    .upload-card { background: white; border-radius: 16px; border: 1px solid #e9ecef; padding: 3rem; }
+    .upload-title { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem; }
+    .upload-subtitle { color: #6c757d; margin-bottom: 2rem; }
+    .upload-icon { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #87CEEB 0%, #5DADE2 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 28px; margin-bottom: 1.5rem; }
+    .form-label { font-weight: 500; color: #1a1a1a; margin-bottom: 8px; font-size: 14px; }
+    .form-control { padding: 14px 16px; border: 2px dashed #dee2e6; border-radius: 12px; font-size: 15px; transition: all 0.3s; }
+    .form-control:focus { border-color: #87CEEB; box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.2); }
+    .form-text { color: #6c757d; font-size: 13px; margin-top: 8px; }
+    .info-box { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+    .info-box strong { color: #1e40af; }
+    .info-box ul { margin: 0.5rem 0 0 0; padding-left: 1.5rem; }
+    .info-box li { color: #1e40af; margin: 0.25rem 0; }
+    .btn-upload { width: 100%; background: #87CEEB; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; transition: all 0.3s; margin-top: 1rem; }
+    .btn-upload:hover { background: #5DADE2; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(135, 206, 235, 0.4); color: white; }
+    .btn-back { width: 100%; background: white; color: #6c757d; border: 1px solid #dee2e6; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; text-align: center; }
+    .btn-back:hover { background: #f8f9fa; color: #87CEEB; border-color: #87CEEB; }
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="upload-card">
+                <div class="text-center">
+                    <div class="upload-icon">
+                        <i class="bi bi-cloud-upload"></i>
+                    </div>
+                    <h2 class="upload-title">Upload Dataset</h2>
+                    <p class="upload-subtitle">Upload your data file to generate a comprehensive profile report</p>
+                </div>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select Dataset File</label>
+                        <input type="file" class="form-control" id="file" name="file" 
+                               accept=".csv,.xlsx,.xls" required>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Supported formats: CSV, Excel (.xlsx, .xls) • Maximum file size: 50 MB
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div style="color: #1e40af; font-weight: 600; margin-bottom: 0.5rem;">
+                            <i class="bi bi-lightbulb me-2"></i>What happens next?
+                        </div>
+                        <ul>
+                            <li>Your file will be securely uploaded and stored</li>
+                            <li>A comprehensive profile report will be generated</li>
+                            <li>You can explore interactive visualizations and statistics</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn-upload">
+                        <i class="bi bi-upload me-2"></i> Upload and Profile
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn-back mt-2">
+                        <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

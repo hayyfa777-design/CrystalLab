@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Data Quality Report — {{ dataset.original_filename }}{% endblock %}
+
+{% block content %}
+
+<style>
+    .table th, .table td {
+        text-align: left !important;
+    }
+</style>
+
+<div class="container my-4">
+
+    <h3 class="mb-4">
+        <i class="bi bi-exclamation-circle text-primary"></i>
+        Data Quality Report for <strong>{{ dataset.original_filename }}</strong>
+    </h3>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-light mb-4">
+        ← Back to Dashboard
+    </a>
+
+    <!-- =========================================================
+         TARGET COLUMN DETECTION SUMMARY
+    ========================================================= -->
+    <h4 class="mt-4">Detected Target Column (for Label Issues)</h4>
+
+    {% if detected_target %}
+        <div class="alert alert-info">
+            <strong>Detected Target Column:</strong> {{ detected_target }}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            ⚠ No valid target column detected automatically.
+        </div>
+    {% endif %}
+
+    <!-- =========================================================
+         OPTIONAL — USER CAN CHANGE TARGET COLUMN
+    ========================================================= -->
+    <h5 class="mt-3">Change Target Column (Optional)</h5>
+
+    <form action="{{ url_for('change_target_column', dataset_id=dataset.id) }}" method="POST" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Select Target Column</label>
+                <select name="target_col" class="form-select">
+                    {% for col in df_columns %}
+                        <option value="{{ col }}"
+                                {% if col == detected_target %}selected{% endif %}>
+                            {{ col }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100">Apply</button>
+            </div>
+        </div>
+    </form>
+
+
+    <!-- =========================================================
+         MISSING VALUES
+    ========================================================= -->
+    <h4 class="mt-4">Missing Values</h4>
+    <div class="mt-2">
+        {{ missing_table | safe }}
+    </div>
+
+
+    <!-- =========================================================
+         DUPLICATE ROWS
+    ========================================================= -->
+    <h4 class="mt-4">Duplicate Rows</h4>
+
+    <table class="table table-bordered table-sm mt-3">
+        <tbody>
+            <tr>
+                <th style="width:220px;">Duplicate Row Count</th>
+                <td>{{ duplicate_rows_count }}</td>
+            </tr>
+            <tr>
+                <th>Duplicate Row (%)</th>
+                <td>{{ duplicate_rows_percent }}</td>
+            </tr>
+            <tr>
+                <th>Duplicate Rows Preview</th>
+                <td>
+                    {% if duplicate_preview_html %}
+                        {{ duplicate_preview_html | safe }}
+                    {% else %}
+                        <p>No duplicate rows found.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- =========================================================
+         OUTLIERS
+    ========================================================= -->
+    <h4 class="mt-4">Outliers</h4>
+    <div class="mt-2">
+        {{ outlier_table | safe }}
+    </div>
+
+
+    <!-- =========================================================
+         LABEL ISSUES
+    ========================================================= -->
+    <h4 class="mt-4">Label Issues</h4>
+
+    {% if label_note %}
+        <div class="alert alert-warning mb-3">
+            ⚠ {{ label_note }}
+        </div>
+    {% endif %}
+
+    <div class="mt-2">
+        {{ label_table | safe }}
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Quality Issues — {{ dataset.original_filename }}{% endblock %}
+
+{% block content %}
+
+<style>
+    .table th, .table td {
+        text-align: left !important;
+        vertical-align: top !important;
+    }
+
+    .note-box {
+        background: #fff4d6;
+        border-left: 4px solid #ffbb33;
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+    .info-box {
+        background: #e7f1ff;
+        border-left: 4px solid #3b82f6;
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+    .success-box {
+        background: #e8ffea;
+        border-left: 4px solid #22c55e;
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+
+    .scroll-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 10px;
+    }
+
+    .outlier-filter-btns button {
+        margin-right: 8px;
+        min-width: 100px;
+    }
+
+    .active-filter {
+        font-weight: bold !important;
+        border-width: 2px !important;
+    }
+
+    .hidden-row {
+        display: none !important;
+    }
+</style>
+
+
+<div class="container mt-4">
+
+    <h3 class="mb-4">
+        <i class="bi bi-exclamation-circle text-primary"></i>
+        Data Quality Report for <b>{{ dataset.original_filename }}</b>
+    </h3>
+
+    <!-- TARGET COLUMN -->
+    <h5 class="mt-4">Target Column (for Label Issues)</h5>
+
+    {% if detected_target %}
+        <div class="info-box mb-3">
+            <b>Using Target Column:</b> {{ detected_target }}
+            {% if session['manual_target_column_' ~ dataset.id] %}
+                <span class="text-success">(manual override)</span>
+            {% else %}
+                <span class="text-muted">(auto-detected)</span>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('change_target_column', dataset_id=dataset.id) }}">
+            <label class="form-label"><b>Change Target Column</b></label>
+            <select name="target_col" class="form-select" required>
+                {% for col in df_columns %}
+                    <option value="{{ col }}" {% if col == detected_target %}selected{% endif %}>
+                        {{ col }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary mt-2" type="submit">Update Target Column</button>
+        </form>
+
+    {% else %}
+        <div class="note-box mb-3">⚠ No valid target column detected.</div>
+    {% endif %}
+
+    <!-- SUMMARY -->
+    <h5 class="mt-5">Summary (YData Profiling)</h5>
+
+    <table class="table table-bordered table-sm mb-4">
+        <tbody>
+            <tr><th style="width: 260px;">Missing Cells</th><td>{{ y_missing_cells }}</td></tr>
+            <tr><th>Missing Cells (%)</th><td>{{ y_missing_percent }}</td></tr>
+            <tr><th>Duplicate Rows</th><td>{{ y_dup_rows }}</td></tr>
+            <tr><th>Duplicate Rows (%)</th><td>{{ y_dup_percent }}</td></tr>
+        </tbody>
+    </table>
+
+    <!-- MISSING VALUES -->
+    <h5 class="mt-4">Missing Values (Local Scan)</h5>
+    {{ missing_table | safe }}
+
+    <!-- DUPLICATES -->
+    <h5 class="mt-5">Duplicate Rows</h5>
+
+    <div class="card p-3 mb-4">
+        {{ duplicate_table | safe }}
+        <h6 class="mt-3">Preview</h6>
+        {{ dup_preview_html | safe }}
+    </div>
+
+    <!-- MERGED OUTLIERS -->
+    <h5 class="mt-5">Outliers (Merged View)</h5>
+
+    {% if outlier_total == 0 %}
+        <div class="success-box mb-3">✓ No outliers detected.</div>
+    {% else %}
+
+        <!-- FILTER BUTTONS -->
+        <div class="outlier-filter-btns mb-3">
+            <button id="btn-all" class="btn btn-outline-primary active-filter" onclick="filterOutliers('all')">All</button>
+            <button id="btn-statistical" class="btn btn-outline-secondary" onclick="filterOutliers('statistical')">Statistical</button>
+            <button id="btn-ai" class="btn btn-outline-secondary" onclick="filterOutliers('ai')">AI-Based</button>
+            <button id="btn-structural" class="btn btn-outline-secondary" onclick="filterOutliers('structural')">Structural</button>
+        </div>
+
+        <!-- Merged Table -->
+        <div class="scroll-container" id="merged-outliers-wrapper">
+            {{ merged_table | safe }}
+        </div>
+
+        <!-- FILTER SCRIPT -->
+        <script>
+            function setActiveButton(key) {
+                document.querySelectorAll(".outlier-filter-btns button").forEach(btn => {
+                    btn.classList.remove("active-filter", "btn-primary");
+                    btn.classList.add("btn-outline-secondary");
+                });
+
+                const idMap = {
+                    "all": "btn-all",
+                    "statistical": "btn-statistical",
+                    "ai": "btn-ai",
+                    "structural": "btn-structural"
+                };
+
+                const active = document.getElementById(idMap[key]);
+                active.classList.add("active-filter", "btn-primary");
+                active.classList.remove("btn-outline-secondary");
+            }
+
+            function filterOutliers(key) {
+                const rows = document.querySelectorAll("#merged-outliers-wrapper table tbody tr");
+
+                rows.forEach(row => {
+                    const type = row.querySelector("td:last-child").textContent.trim();
+                    let show = (key === "all") ||
+                               (key === "statistical" && type === "Statistical") ||
+                               (key === "ai" && type === "AI-Based") ||
+                               (key === "structural" && type === "Structural");
+
+                    row.classList.toggle("hidden-row", !show);
+                });
+
+                setActiveButton(key);
+            }
+        </script>
+
+    {% endif %}
+
+    <!-- SEPARATE OUTLIERS (ONLY IF EXIST) -->
+    {% if statistical_count > 0 %}
+        <h6 class="mt-5">Statistical Outliers (Separate View)</h6>
+        <div class="scroll-container">{{ statistical_table | safe }}</div>
+    {% endif %}
+
+    {% if semantic_count > 0 %}
+        <h6 class="mt-4">AI-Based Outliers (Separate View)</h6>
+        <div class="scroll-container">{{ semantic_table | safe }}</div>
+    {% endif %}
+
+    {% if structural_count > 0 %}
+        <h6 class="mt-4">Structural Outliers (Separate View)</h6>
+        <div class="scroll-container">{{ structural_table | safe }}</div>
+    {% endif %}
+
+    <!-- LABEL ISSUES -->
+    <h5 class="mt-5">Label Issues (Cleanlab)</h5>
+
+    {% if not detected_target %}
+        <div class="note-box">⚠ Skipped — no target column detected.</div>
+    {% else %}
+        {% if label_issue_count > 0 %}
+
+            <div class="info-box mb-3">
+                <b>Label issues detected: {{ label_issue_count }}</b><br>
+                <small>{{ label_note }}</small>
+            </div>
+
+            <div class="scroll-container mb-4">
+                {{ label_table | safe }}
+            </div>
+
+        {% else %}
+            <div class="success-box">No label issues found.</div>
+        {% endif %}
+    {% endif %}
+
+    <a class="btn btn-secondary mt-4" href="{{ url_for('dashboard') }}">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}
