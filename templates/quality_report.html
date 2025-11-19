@@ -174,21 +174,10 @@
 
     {% endif %}
 
-    <!-- SEPARATE OUTLIERS (ONLY IF EXIST) -->
-    {% if statistical_count > 0 %}
-        <h6 class="mt-5">Statistical Outliers (Separate View)</h6>
-        <div class="scroll-container">{{ statistical_table | safe }}</div>
-    {% endif %}
-
-    {% if semantic_count > 0 %}
-        <h6 class="mt-4">AI-Based Outliers (Separate View)</h6>
-        <div class="scroll-container">{{ semantic_table | safe }}</div>
-    {% endif %}
-
-    {% if structural_count > 0 %}
-        <h6 class="mt-4">Structural Outliers (Separate View)</h6>
-        <div class="scroll-container">{{ structural_table | safe }}</div>
-    {% endif %}
+    <!-- The merged view already supports filtering by type, so the
+         individual tables add noise below the main table.  We keep the
+         merged table as the single source of truth and rely on the
+         buttons above for per-type views. -->
 
     <!-- LABEL ISSUES -->
     <h5 class="mt-5">Label Issues (Cleanlab)</h5>
