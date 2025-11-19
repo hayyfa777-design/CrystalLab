@@ -135,6 +135,10 @@
             {{ merged_table | safe }}
         </div>
 
+        <div id="no-outliers-message" class="note-box d-none mt-3">
+            ⚠ No outliers for the selected type.
+        </div>
+
         <!-- FILTER SCRIPT -->
         <script>
             function setActiveButton(key) {
@@ -157,6 +161,7 @@
 
             function filterOutliers(key) {
                 const rows = document.querySelectorAll("#merged-outliers-wrapper table tbody tr");
+                const message = document.getElementById("no-outliers-message");
 
                 rows.forEach(row => {
                     const type = row.querySelector("td:last-child").textContent.trim();
@@ -169,7 +174,17 @@
                 });
 
                 setActiveButton(key);
+
+                const visibleCount = Array.from(rows).filter(row => !row.classList.contains("hidden-row")).length;
+                if (visibleCount === 0) {
+                    message.classList.remove("d-none");
+                } else {
+                    message.classList.add("d-none");
+                }
             }
+
+            // Ensure the correct message state is shown on load
+            filterOutliers('all');
         </script>
 
     {% endif %}
